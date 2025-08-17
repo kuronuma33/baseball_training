@@ -845,7 +845,7 @@
             
             <div class="sub-actions">
                 <button class="sub-action-btn" id="dashBtn" onclick="executeDash()">
-                    🏃‍♂️ しらさぎ練習
+                    🏃‍♂️ 練習日
                 </button>
                 <button class="sub-action-btn" id="flexBtn" onclick="executeFlexibility()">
                     🧘‍♂️ 柔軟体操
@@ -999,7 +999,7 @@
             document.getElementById('dashBtn').textContent = '✅ 完了';
             
             saveGameData();
-            showAchievement("しらさぎ練習完了！\n素振り効果がアップ！\n（1回 = 15歩）");
+            showAchievement("練習完了！\n素振り効果がアップ！\n（1回 = 15歩）");
         }
         
         // 柔軟実行
@@ -1453,7 +1453,7 @@
         function resetDailyUI() {
             document.getElementById('boostIndicator').classList.remove('active');
             document.getElementById('dashBtn').disabled = false;
-            document.getElementById('dashBtn').textContent = '🏃‍♂️ しらさぎ練習';
+            document.getElementById('dashBtn').textContent = '🏃‍♂️ 練習日';
         }
         
         // 自動保存の設定
