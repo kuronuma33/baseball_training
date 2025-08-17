@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>叶夢~甲子園への道のり~</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(180deg, #1976D2 0%, #42A5F5 100%);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            max-width: 400px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, #E3F2FD 0%, #BBDEFB 100%);
+            position: relative;
+        }
+        
+        /* 上部: 甲子園マップエリア */
+        .map-area {
+            height: 28vh;
+            height: 28dvh;
+            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            position: relative;
+            overflow: hidden;
+            border-bottom: 3px solid #1B5E20;
+            flex-shrink: 0;
+        }
+        
+        .map-header {
+            text-align: center;
+            color: white;
+            padding: 6px 0;
+            background: rgba(0,0,0,0.2);
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        .route-track {
+            height: 50px;
+            background: rgba(255,255,255,0.3);
+            margin: 8px 10px;
+            border-radius: 25px;
+            position: relative;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        
+        .route-line {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            right: 10px;
+            height: 4px;
+            background: rgba(255,255,255,0.6);
+            transform: translateY(-50%);
+            border-radius: 2px;
+        }
+        
+        .milestone-point {
+            position: absolute;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            background: #FFF;
+            border-radius: 50%;
+            transform: translateY(-50%);
+            border: 2px solid #2E7D32;
+        }
+        
+        .milestone-passed {
+            background: #4CAF50;
+            box-shadow: 0 0 8px #4CAF50;
+        }
+        
+        .player-icon {
+            position: absolute;
+            top: 50%;
+            font-size: 24px;
+            transform: translate(-50%, -50%);
+            animation: bounce 2s infinite;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+            transition: left 0.5s ease;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        .progress-info {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            color: white;
+            font-size: 10px;
+            padding: 6px;
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .progress-stat {
+            text-align: center;
+        }
+        
+        .progress-number {
+            font-weight: bold;
+            font-size: 12px;
+            display: block;
+        }
+        
+        /* 中部: キャラクターステータス */
+        .character-area {
+            height: 32vh;
+            height: 32dvh;
+            background: linear-gradient(135deg, #FFFFFF, #F5F5F5);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .character-card {
+            background: linear-gradient(135deg, #FFFFFF, #F8F9FA);
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(46, 125, 50, 0.2);
+            padding: 12px;
+            border: 2px solid #E8F5E8;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .character-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(76,175,80,0.1), transparent);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .character-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .level-badge {
+            background: linear-gradient(135deg, #FF5722, #D32F2F);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 3px 6px rgba(211, 47, 47, 0.3);
+        }
+        
+        .health-display {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .heart-icon {
+            font-size: 20px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+        
+        .heart-full {
+            color: #D32F2F;
+        }
+        
+        .heart-empty {
+            color: #E0E0E0;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .boost-indicator {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            animation: glow 1s infinite alternate;
+            display: none;
+        }
+        
+        .boost-indicator.active {
+            display: block;
+        }
+        
+        .chart-btn {
+            background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(156, 39, 176, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .chart-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(156, 39, 176, 0.3);
+        }
+        
+        .reset-btn {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .reset-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(244, 67, 54, 0.3);
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #FF9800; }
+            to { box-shadow: 0 0 15px #FF9800, 0 0 20px #FF9800; }
+        }
+        
+        .daily-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .stat-mini {
+            text-align: center;
+            background: rgba(46, 125, 50, 0.1);
+            padding: 6px;
+            border-radius: 8px;
+            border: 1px solid rgba(46, 125, 50, 0.2);
+        }
+        
+        .stat-mini-number {
+            font-weight: bold;
+            color: #2E7D32;
+            font-size: 14px;
+            display: block;
+        }
+        
+        .stat-mini-label {
+            font-size: 9px;
+            color: #666;
+        }
+        
+        /* 下部: アクションエリア */
+        .action-area {
+            height: 40vh;
+            height: 40dvh;
+            background: linear-gradient(135deg, #F5F5F5, #E0E0E0);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        
+        .swing-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .swing-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        .swing-label {
+            font-weight: bold;
+            color: #2E7D32;
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .swing-counter {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .counter-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(46, 125, 50, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .counter-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(46, 125, 50, 0.3);
+        }
+        
+        .counter-display {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2E7D32;
+            min-width: 45px;
+            text-align: center;
+            background: linear-gradient(135deg, #E8F5E8, #F1F8E9);
+            padding: 6px;
+            border-radius: 8px;
+            border: 2px solid #C8E6C9;
+        }
+        
+        .main-action-btn {
+            background: linear-gradient(135deg, #D32F2F, #F44336);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(211, 47, 47, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .main-action-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 4px 8px rgba(211, 47, 47, 0.4);
+        }
+        
+        .main-action-btn:disabled {
+            background: #BDBDBD;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .sub-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .sub-action-btn {
+            background: linear-gradient(135deg, #1976D2, #2196F3);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(25, 118, 210, 0.3);
+            transition: all 0.2s ease;
+        }
+        
+        .sub-action-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3);
+        }
+        
+        .sub-action-btn:disabled {
+            background: #BDBDBD;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .daily-limit-indicator {
+            text-align: center;
+            background: rgba(25, 118, 210, 0.1);
+            color: #1976D2;
+            padding: 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            border: 1px solid rgba(25, 118, 210, 0.2);
+        }
+        
+        /* 成果ポップアップ */
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #FFD700, #FFA000);
+            color: #333;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            max-width: 280px;
+        }
+        
+        .achievement-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .achievement-popup h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        /* チャートモーダル */
+        .chart-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .chart-modal.show {
+            display: flex;
+        }
+        
+        .chart-content {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #E0E0E0;
+            padding-bottom: 10px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2E7D32;
+        }
+        
+        .close-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            height: 250px;
+            padding: 20px 10px;
+            gap: 8px;
+            position: relative;
+        }
+        
+        .line-chart {
+            position: relative;
+            height: 250px;
+            padding: 20px;
+        }
+        
+        .chart-svg {
+            width: 100%;
+            height: 210px;
+        }
+        
+        .chart-line {
+            fill: none;
+            stroke: #2E7D32;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .chart-point {
+            fill: #4CAF50;
+            stroke: #2E7D32;
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-point:hover {
+            fill: #1B5E20;
+            r: 6;
+        }
+        
+        .chart-grid {
+            stroke: #E0E0E0;
+            stroke-width: 1;
+            stroke-dasharray: 3,3;
+        }
+        
+        .chart-label {
+            font-size: 10px;
+            fill: #666;
+            text-anchor: middle;
+        }
+        
+        .chart-value-label {
+            font-size: 9px;
+            fill: #2E7D32;
+            text-anchor: middle;
+            font-weight: bold;
+        }
+        
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            max-width: 40px;
+        }
+        
+        .bar {
+            width: 100%;
+            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            border-radius: 4px 4px 0 0;
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 10px;
+        }
+        
+        .bar:hover {
+            background: linear-gradient(135deg, #1B5E20, #2E7D32);
+            transform: scale(1.05);
+        }
+        
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: bold;
+            color: #2E7D32;
+            background: white;
+            padding: 2px 4px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .bar:hover .bar-value {
+            opacity: 1;
+        }
+        
+        .bar-label {
+            font-size: 9px;
+            color: #666;
+            margin-top: 5px;
+            text-align: center;
+            transform: rotate(-45deg);
+            transform-origin: center;
+            white-space: nowrap;
+        }
+        
+        /* 確認ダイアログ */
+        .confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .confirm-modal.show {
+            display: flex;
+        }
+        
+        .confirm-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .confirm-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #f44336;
+            margin-bottom: 15px;
+        }
+        
+        .confirm-message {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .confirm-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .confirm-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .confirm-btn.cancel {
+            background: #e0e0e0;
+            color: #666;
+        }
+        
+        .confirm-btn.confirm {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+        
+        .confirm-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* 保存インジケーター */
+        .save-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 1000;
+            animation: saveSlideIn 2s ease-in-out;
+        }
+        
+        @keyframes saveSlideIn {
+            0% { opacity: 0; transform: translateX(100%); }
+            20% { opacity: 1; transform: translateX(0); }
+            80% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 上部: 甲子園マップエリア -->
+        <div class="map-area">
+            <div class="map-header">
+                ⚾ 叶夢~甲子園への道のり~ ⚾
+            </div>
+            <div class="route-track">
+                <div class="route-line"></div>
+                <div class="milestone-point milestone-passed" style="left: 12.5%;"></div>
+                <div class="milestone-point" style="left: 25%;"></div>
+                <div class="milestone-point" style="left: 37.5%;"></div>
+                <div class="milestone-point" style="left: 50%;"></div>
+                <div class="milestone-point" style="left: 62.5%;"></div>
+                <div class="milestone-point" style="left: 75%;"></div>
+                <div class="milestone-point" style="left: 87.5%;"></div>
+                <div class="player-icon" id="playerIcon" style="left: 15%;">🏃‍♂️</div>
+            </div>
+            <div class="progress-info">
+                <div class="progress-stat">
+                    <span class="progress-number" id="totalSteps">0</span>
+                    <span>総歩数</span>
+                </div>
+                <div class="progress-stat">
+                    <span class="progress-number" id="nextTarget">神奈川県</span>
+                    <span>次の目標</span>
+                </div>
+                <div class="progress-stat">
+                    <span class="progress-number" id="remaining">120,192</span>
+                    <span>次まで</span>
+                </div>
+                <div class="progress-stat">
+                    <span class="progress-number" id="totalRemaining">961,538</span>
+                    <span>甲子園まで</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 中部: キャラクターステータス -->
+        <div class="character-area">
+            <div class="character-card">
+                <div class="character-header">
+                    <div class="level-badge">Lv.<span id="playerLevel">1</span></div>
+                    <div class="health-display">
+                        <span style="font-size: 14px; font-weight: bold; color: #666;">体力:</span>
+                        <div id="healthHearts">
+                            <span class="heart-icon heart-full">♥</span>
+                            <span class="heart-icon heart-full">♥</span>
+                            <span class="heart-icon heart-full">♥</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="status-row">
+                    <div style="color: #666; font-size: 14px;">
+                        📅 <span id="currentDate">2025年8月10日</span>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="chart-btn" onclick="showChart()">📊 グラフ</button>
+                        <button class="reset-btn" onclick="resetAllData()">🔄 リセット</button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 6px 0;">
+                    <div class="boost-indicator" id="boostIndicator">
+                        🚀 ブースト効果中！
+                    </div>
+                </div>
+                
+                <div class="daily-stats">
+                    <div class="stat-mini">
+                        <span class="stat-mini-number" id="todaySwings">0</span>
+                        <span class="stat-mini-label">今日の素振り</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-number" id="todaySteps">0</span>
+                        <span class="stat-mini-label">今日の歩数</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-number" id="consecutiveDays">0</span>
+                        <span class="stat-mini-label">連続日数</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 下部: アクションエリア -->
+        <div class="action-area">
+            <div class="swing-section">
+                <div class="swing-input-row">
+                    <div class="swing-label">⚾ 素振り回数</div>
+                    <div class="swing-counter">
+                        <button class="counter-btn" onclick="changeCount(-10)">-</button>
+                        <div class="counter-display" id="swingCount">50</div>
+                        <button class="counter-btn" onclick="changeCount(10)">+</button>
+                    </div>
+                </div>
+                
+                <button class="main-action-btn" id="swingBtn" onclick="executeSwing()">
+                    ⚾ 素振り実行！
+                </button>
+                
+                <div class="daily-limit-indicator">
+                    体力: <span id="healthText">♥♥♥</span> | 柔軟で1ハート回復
+                </div>
+            </div>
+            
+            <div class="sub-actions">
+                <button class="sub-action-btn" id="dashBtn" onclick="executeDash()">
+                    🏃‍♂️ しらさぎ練習
+                </button>
+                <button class="sub-action-btn" id="flexBtn" onclick="executeFlexibility()">
+                    🧘‍♂️ 柔軟体操
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 成果ポップアップ -->
+    <div class="achievement-popup" id="achievementPopup">
+        <h2>🎉 素晴らしい！ 🎉</h2>
+        <p id="achievementText"></p>
+    </div>
+    
+    <!-- チャートモーダル -->
+    <div class="chart-modal" id="chartModal">
+        <div class="chart-content">
+            <div class="chart-header">
+                <div class="chart-title">📊 素振り回数の推移</div>
+                <button class="close-btn" onclick="hideChart()">×</button>
+            </div>
+            <div class="chart-container">
+                <div class="bar-chart" id="barChart">
+                    <!-- 動的に線グラフを生成 -->
+                </div>
+            </div>
+            <div style="margin-top: 15px; text-align: center; color: #666; font-size: 12px;">
+                過去7日間の素振り回数の推移
+            </div>
+        </div>
+    </div>
+    
+    <!-- 確認ダイアログ -->
+    <div class="confirm-modal" id="confirmModal">
+        <div class="confirm-content">
+            <div class="confirm-title">⚠️ データリセット</div>
+            <div class="confirm-message">
+                本当に全てのデータをリセットしますか？<br>
+                <strong>この操作は元に戻せません。</strong>
+            </div>
+            <div class="confirm-buttons">
+                <button class="confirm-btn cancel" onclick="hideConfirm()">キャンセル</button>
+                <button class="confirm-btn confirm" onclick="confirmReset()">リセット実行</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ゲームデータ
+        let gameData = {
+            totalSteps: 0,
+            totalSwings: 0,
+            health: 3,
+            hasBoost: false,
+            swingInputCount: 0,
+            lastDate: null,
+            consecutiveDays: 0,
+            currentLevel: 1,
+            todayData: {
+                swings: 0,
+                steps: 0,
+                distance: 0
+            },
+            swingCount: 50,
+            dailyHistory: []
+        };
+        
+        // 目標設定
+        const TOTAL_DISTANCE_KM = 500;
+        const STEP_DISTANCE_M = 0.52;
+        const TOTAL_STEPS = Math.ceil(TOTAL_DISTANCE_KM * 1000 / STEP_DISTANCE_M);
+        
+        // マイルストーン設定
+        const milestones = [
+            { name: "神奈川県", steps: Math.floor(TOTAL_STEPS * 0.125) },
+            { name: "静岡県", steps: Math.floor(TOTAL_STEPS * 0.25) },
+            { name: "愛知県", steps: Math.floor(TOTAL_STEPS * 0.375) },
+            { name: "岐阜県", steps: Math.floor(TOTAL_STEPS * 0.5) },
+            { name: "滋賀県", steps: Math.floor(TOTAL_STEPS * 0.625) },
+            { name: "京都府", steps: Math.floor(TOTAL_STEPS * 0.75) },
+            { name: "大阪府", steps: Math.floor(TOTAL_STEPS * 0.875) },
+            { name: "甲子園球場", steps: TOTAL_STEPS }
+        ];
+        
+        // 日付表示
+        function updateDate() {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDate').textContent = today.toLocaleDateString('ja-JP', options);
+        }
+        
+        // カウント変更
+        function changeCount(change) {
+            gameData.swingCount = Math.max(0, gameData.swingCount + change);
+            document.getElementById('swingCount').textContent = gameData.swingCount;
+        }
+        
+        // 素振り実行
+        function executeSwing() {
+            const swingCount = gameData.swingCount;
+            
+            if (swingCount <= 0) {
+                showAchievement("素振り回数を設定してください！");
+                return;
+            }
+            
+            if (gameData.health <= 0) {
+                showAchievement("体力が不足しています！\n柔軟体操で回復してください。");
+                return;
+            }
+            
+            // 体力消費
+            gameData.health--;
+            gameData.swingInputCount++;
+            
+            // 歩数計算（ブースト効果適用）
+            const stepsPerSwing = gameData.hasBoost ? 15 : 10;
+            const stepsGained = swingCount * stepsPerSwing;
+            
+            // データ更新
+            gameData.totalSteps += stepsGained;
+            gameData.totalSwings += swingCount;
+            gameData.todayData.swings += swingCount;
+            gameData.todayData.steps += stepsGained;
+            
+            // 入力リセット
+            gameData.swingCount = 0;
+            
+            // 表示更新
+            updateDisplay();
+            updateMap();
+            saveGameData();
+            
+            // 成果表示
+            showAchievement(`素振り ${swingCount}回 完了！\n${stepsGained}歩前進しました！`);
+            
+            // レベルアップチェック
+            checkLevelUp();
+        }
+        
+        // ダッシュ実行
+        function executeDash() {
+            if (gameData.hasBoost) {
+                showAchievement("今日はすでに練習済み！");
+                return;
+            }
+            
+            gameData.hasBoost = true;
+            document.getElementById('boostIndicator').classList.add('active');
+            document.getElementById('dashBtn').disabled = true;
+            document.getElementById('dashBtn').textContent = '✅ 完了';
+            
+            saveGameData();
+            showAchievement("しらさぎ練習完了！\n素振り効果がアップ！\n（1回 = 15歩）");
+        }
+        
+        // 柔軟実行
+        function executeFlexibility() {
+            if (gameData.health >= 3) {
+                showAchievement("体力は最大です！");
+                return;
+            }
+            
+            gameData.health = Math.min(3, gameData.health + 1); // 1回で1ハート回復
+            updateDisplay();
+            saveGameData();
+            showAchievement("柔軟体操完了！\n体力が1回復しました！");
+        }
+        
+        // 表示更新
+        function updateDisplay() {
+            // 基本情報
+            document.getElementById('totalSteps').textContent = gameData.totalSteps.toLocaleString();
+            document.getElementById('playerLevel').textContent = gameData.currentLevel;
+            document.getElementById('swingCount').textContent = gameData.swingCount;
+            
+            // 今日の記録
+            document.getElementById('todaySwings').textContent = gameData.todayData.swings;
+            document.getElementById('todaySteps').textContent = gameData.todayData.steps;
+            document.getElementById('consecutiveDays').textContent = gameData.consecutiveDays;
+            
+            // 体力表示
+            const hearts = document.querySelectorAll('.heart-icon');
+            hearts.forEach((heart, index) => {
+                if (index < gameData.health) {
+                    heart.className = 'heart-icon heart-full';
+                } else {
+                    heart.className = 'heart-icon heart-empty';
+                }
+            });
+            
+            // 体力テキスト更新
+            let healthText = '';
+            for (let i = 0; i < 3; i++) {
+                healthText += i < gameData.health ? '♥' : '♡';
+            }
+            document.getElementById('healthText').textContent = healthText;
+            
+            // 次のマイルストーン
+            updateNextTarget();
+            
+            // ボタンの状態
+            const swingBtn = document.getElementById('swingBtn');
+            if (gameData.health <= 0) {
+                swingBtn.disabled = true;
+                swingBtn.textContent = '😰 体力不足';
+            } else {
+                swingBtn.disabled = false;
+                swingBtn.textContent = '⚾ 素振り実行！';
+            }
+        }
+        
+        // 次のターゲット更新
+        function updateNextTarget() {
+            const nextMilestone = milestones.find(m => m.steps > gameData.totalSteps);
+            if (nextMilestone) {
+                const stepsToNext = nextMilestone.steps - gameData.totalSteps;
+                const stepsToGoal = TOTAL_STEPS - gameData.totalSteps;
+                document.getElementById('nextTarget').textContent = nextMilestone.name;
+                document.getElementById('remaining').textContent = stepsToNext.toLocaleString();
+                document.getElementById('totalRemaining').textContent = stepsToGoal.toLocaleString();
+            } else {
+                document.getElementById('nextTarget').textContent = '🎉 到達！';
+                document.getElementById('remaining').textContent = '0';
+                document.getElementById('totalRemaining').textContent = '0';
+            }
+        }
+        
+        // 地図更新
+        function updateMap() {
+            const progress = Math.min(100, (gameData.totalSteps / TOTAL_STEPS) * 100);
+            document.getElementById('playerIcon').style.left = Math.max(5, progress) + '%';
+        }
+        
+        // レベルアップチェック
+        function checkLevelUp() {
+            const newLevel = Math.floor(gameData.totalSteps / 1000) + 1;
+            if (newLevel > gameData.currentLevel) {
+                gameData.currentLevel = newLevel;
+                showAchievement(`🎉 レベルアップ！ 🎉\nレベル ${newLevel} になりました！`);
+                updateDisplay();
+            }
+        }
+        
+        // 成果表示
+        function showAchievement(text) {
+            const popup = document.getElementById('achievementPopup');
+            document.getElementById('achievementText').textContent = text;
+            popup.classList.add('show');
+            
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 3000);
+        }
+        
+        // チャート表示
+        function showChart() {
+            const modal = document.getElementById('chartModal');
+            const barChart = document.getElementById('barChart');
+            
+            // チャートをクリア
+            barChart.innerHTML = '';
+            
+            // 最新7日分の実際のデータを取得
+            let recentData = [];
+            const today = new Date();
+            
+            // 過去7日分のデータを準備
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateString = date.toDateString();
+                
+                // 履歴から該当日のデータを探す
+                const existingData = gameData.dailyHistory.find(d => d.date === dateString);
+                
+                if (existingData) {
+                    recentData.push(existingData);
+                } else if (i === 0) {
+                    // 今日のデータ
+                    recentData.push({
+                        date: dateString,
+                        swings: gameData.todayData.swings,
+                        steps: gameData.todayData.steps
+                    });
+                } else {
+                    // データがない日は0として追加
+                    recentData.push({
+                        date: dateString,
+                        swings: 0,
+                        steps: 0
+                    });
+                }
+            }
+            
+            // 線グラフを生成
+            createLineChart(barChart, recentData);
+            modal.classList.add('show');
+        }
+        
+        // 線グラフ作成
+        function createLineChart(container, data) {
+            const maxSwings = Math.max(...data.map(d => d.swings), 50); // 最小50で正規化
+            const width = 300;
+            const height = 210;
+            const padding = 40;
+            
+            // SVG要素を作成
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'chart-svg');
+            svg.setAttribute('viewBox', `0 0 ${width + padding * 2} ${height + padding * 2}`);
+            
+            // グリッド線を描画
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (height / 5) * i;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('class', 'chart-grid');
+                line.setAttribute('x1', padding);
+                line.setAttribute('y1', y);
+                line.setAttribute('x2', width + padding);
+                line.setAttribute('y2', y);
+                svg.appendChild(line);
+                
+                // Y軸ラベル
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('class', 'chart-label');
+                label.setAttribute('x', padding - 10);
+                label.setAttribute('y', y + 3);
+                label.setAttribute('text-anchor', 'end');
+                label.textContent = Math.round(maxSwings - (maxSwings / 5) * i);
+                svg.appendChild(label);
+            }
+            
+            // データポイントと線を描画
+            let pathData = '';
+            data.forEach((dayData, index) => {
+                const x = padding + (width / (data.length - 1)) * index;
+                const y = padding + height - (dayData.swings / maxSwings) * height;
+                
+                // パスデータを構築
+                if (index === 0) {
+                    pathData += `M ${x} ${y}`;
+                } else {
+                    pathData += ` L ${x} ${y}`;
+                }
+                
+                // データポイントを描画
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('class', 'chart-point');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', 4);
+                
+                // ツールチップ効果
+                circle.addEventListener('mouseenter', function() {
+                    // 値ラベルを表示
+                    const valueLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    valueLabel.setAttribute('class', 'chart-value-label');
+                    valueLabel.setAttribute('id', 'temp-label');
+                    valueLabel.setAttribute('x', x);
+                    valueLabel.setAttribute('y', y - 10);
+                    valueLabel.textContent = dayData.swings;
+                    svg.appendChild(valueLabel);
+                });
+                
+                circle.addEventListener('mouseleave', function() {
+                    const tempLabel = svg.querySelector('#temp-label');
+                    if (tempLabel) tempLabel.remove();
+                });
+                
+                svg.appendChild(circle);
+                
+                // X軸ラベル（日付）
+                const date = new Date(dayData.date);
+                const dateLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                dateLabel.setAttribute('class', 'chart-label');
+                dateLabel.setAttribute('x', x);
+                dateLabel.setAttribute('y', height + padding + 20);
+                dateLabel.textContent = `${date.getMonth() + 1}/${date.getDate()}`;
+                svg.appendChild(dateLabel);
+            });
+            
+            // 線を描画
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('class', 'chart-line');
+            path.setAttribute('d', pathData);
+            svg.appendChild(path);
+            
+            // コンテナに追加
+            container.appendChild(svg);
+        }
+        
+        // チャート非表示
+        function hideChart() {
+            const modal = document.getElementById('chartModal');
+            modal.classList.remove('show');
+        }
+        
+        // データリセット確認
+        function resetAllData() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('show');
+        }
+        
+        // 確認ダイアログを閉じる
+        function hideConfirm() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('show');
+        }
+        
+        // リセット実行
+        function confirmReset() {
+            // 全データを初期化
+            gameData = {
+                totalSteps: 0,
+                totalSwings: 0,
+                health: 3,
+                hasBoost: false,
+                swingInputCount: 0,
+                lastDate: new Date().toDateString(),
+                consecutiveDays: 0,
+                currentLevel: 1,
+                todayData: {
+                    swings: 0,
+                    steps: 0,
+                    distance: 0
+                },
+                swingCount: 50,
+                dailyHistory: []
+            };
+            
+            // 保存データを完全クリア
+            if (window.history && window.history.replaceState) {
+                const currentUrl = window.location.href.split('#')[0];
+                window.history.replaceState(null, null, currentUrl);
+            }
+            
+            const hiddenElement = document.getElementById('persistentGameData');
+            if (hiddenElement) hiddenElement.textContent = '';
+            
+            document.cookie = 'koshienData=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            
+            // UIをリセット
+            resetDailyUI();
+            
+            // 表示を更新
+            updateDisplay();
+            updateMap();
+            
+            // 新しいデータを保存
+            saveGameData();
+            
+            // 確認ダイアログを閉じる
+            hideConfirm();
+            
+            // 完了メッセージ
+            showAchievement('データをリセットしました！\n新しい旅を始めましょう！🎉');
+        }
+        
+        // 保存インジケーター
+        function showSaveIndicator() {
+            const indicator = document.createElement('div');
+            indicator.className = 'save-indicator';
+            indicator.textContent = '💾 保存完了';
+            document.body.appendChild(indicator);
+            
+            setTimeout(() => {
+                if (indicator.parentNode) {
+                    indicator.parentNode.removeChild(indicator);
+                }
+            }, 2000);
+        }
+        
+        // データ保存・読み込み機能
+        function saveGameData() {
+            try {
+                const dataToSave = JSON.stringify(gameData);
+                if (window.history && window.history.replaceState) {
+                    try {
+                        const currentUrl = window.location.href.split('#')[0];
+                        window.history.replaceState(null, null, currentUrl + '#gamedata=' + encodeURIComponent(dataToSave));
+                    } catch (e) {
+                        window.location.hash = 'gamedata=' + encodeURIComponent(dataToSave);
+                    }
+                }
+                
+                let hiddenDataElement = document.getElementById('persistentGameData');
+                if (!hiddenDataElement) {
+                    hiddenDataElement = document.createElement('script');
+                    hiddenDataElement.id = 'persistentGameData';
+                    hiddenDataElement.type = 'application/json';
+                    hiddenDataElement.style.display = 'none';
+                    document.head.appendChild(hiddenDataElement);
+                }
+                hiddenDataElement.textContent = dataToSave;
+                
+                try {
+                    document.cookie = `koshienData=${encodeURIComponent(dataToSave)}; expires=${new Date(Date.now() + 365*24*60*60*1000).toUTCString()}; path=/; SameSite=Lax`;
+                } catch (cookieError) {
+                    console.log('Cookie保存は利用できません');
+                }
+                
+                showSaveIndicator();
+            } catch (error) {
+                console.error('データ保存エラー:', error);
+            }
+        }
+        
+        function loadGameData() {
+            try {
+                let savedData = null;
+                
+                // URLハッシュから読み込み
+                if (window.location.hash) {
+                    const hash = window.location.hash.substring(1);
+                    if (hash.startsWith('gamedata=')) {
+                        try {
+                            savedData = decodeURIComponent(hash.substring(9));
+                        } catch (e) {
+                            console.log('URLハッシュの解析に失敗');
+                        }
+                    }
+                }
+                
+                // HTML要素から読み込み
+                if (!savedData) {
+                    const hiddenElement = document.getElementById('persistentGameData');
+                    if (hiddenElement && hiddenElement.textContent) {
+                        savedData = hiddenElement.textContent;
+                    }
+                }
+                
+                // Cookieから読み込み
+                if (!savedData) {
+                    try {
+                        const cookies = document.cookie.split(';');
+                        for (let cookie of cookies) {
+                            const [name, value] = cookie.trim().split('=');
+                            if (name === 'koshienData') {
+                                savedData = decodeURIComponent(value);
+                                break;
+                            }
+                        }
+                    } catch (cookieError) {
+                        console.log('Cookie読み込みスキップ');
+                    }
+                }
+                
+                if (savedData) {
+                    try {
+                        const loadedData = JSON.parse(savedData);
+                        if (loadedData && typeof loadedData === 'object') {
+                            gameData = { ...gameData, ...loadedData };
+                            console.log('ゲームデータを復元しました');
+                            return true;
+                        }
+                    } catch (parseError) {
+                        console.error('データの解析に失敗:', parseError);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('データ読み込みエラー:', error);
+            }
+            return false;
+        }
+        
+        // 日付チェック機能
+        function checkNewDay() {
+            const today = new Date().toDateString();
+            
+            if (gameData.lastDate !== today) {
+                if (gameData.lastDate && gameData.todayData.swings > 0) {
+                    gameData.dailyHistory.push({
+                        date: gameData.lastDate,
+                        swings: gameData.todayData.swings,
+                        steps: gameData.todayData.steps
+                    });
+                    
+                    if (gameData.dailyHistory.length > 30) {
+                        gameData.dailyHistory = gameData.dailyHistory.slice(-30);
+                    }
+                    
+                    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
+                    if (gameData.lastDate === yesterday) {
+                        gameData.consecutiveDays++;
+                    } else {
+                        gameData.consecutiveDays = 1;
+                    }
+                } else if (gameData.lastDate && gameData.todayData.swings === 0) {
+                    gameData.consecutiveDays = 0;
+                }
+                
+                gameData.todayData = { swings: 0, steps: 0, distance: 0 };
+                gameData.swingInputCount = 0;
+                gameData.health = 3;
+                gameData.hasBoost = false;
+                gameData.lastDate = today;
+                
+                resetDailyUI();
+            }
+        }
+        
+        // 日次UIリセット
+        function resetDailyUI() {
+            document.getElementById('boostIndicator').classList.remove('active');
+            document.getElementById('dashBtn').disabled = false;
+            document.getElementById('dashBtn').textContent = '🏃‍♂️ しらさぎ練習';
+        }
+        
+        // 自動保存の設定
+        function setupAutoSave() {
+            setInterval(saveGameData, 30000);
+            window.addEventListener('beforeunload', saveGameData);
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') {
+                    saveGameData();
+                }
+            });
+        }
+        
+        // 初期化
+        function init() {
+            loadGameData();
+            checkNewDay();
+            setupAutoSave();
+            
+            updateDate();
+            updateDisplay();
+            updateMap();
+            
+            if (gameData.hasBoost) {
+                document.getElementById('boostIndicator').classList.add('active');
+                document.getElementById('dashBtn').disabled = true;
+                document.getElementById('dashBtn').textContent = '✅ 完了';
+            }
+            
+            if (!gameData.lastDate) {
+                gameData.lastDate = new Date().toDateString();
+                saveGameData();
+            }
+            
+            gameData.currentLevel = Math.floor(gameData.totalSteps / 1000) + 1;
+            updateDisplay();
+        }
+        
+        // ページ読み込み時に初期化
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
